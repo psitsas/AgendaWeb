@@ -6,15 +6,18 @@ export function renderNavbar(tenantSlug) {
 
   navbar.innerHTML = `
     <div class="nav-brand">
-      <span class="logo-text">Agendi</span>
-      <span class="nav-tenant">${tenantSlug ?? ''}</span>
+      <div class="brand-logo">A</div>
+      <div>
+        <span class="logo-text">Agendi</span>
+        <span class="nav-tenant">${tenantSlug ?? ''}</span>
+      </div>
     </div>
     <ul class="nav-links">
       <li><a href="#agenda"   class="nav-link" data-page="agenda">📅 Agenda</a></li>
       <li><a href="#services" class="nav-link" data-page="services">✂️ Servicios</a></li>
       <li><a href="#settings" class="nav-link" data-page="settings">⚙️ Configuración</a></li>
     </ul>
-    <button class="btn-logout" id="btn-logout">Salir</button>
+    <button class="btn-logout" id="btn-logout">⏻ Salir</button>
   `;
 
   document.getElementById('btn-logout').addEventListener('click', () => {
