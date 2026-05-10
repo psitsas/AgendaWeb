@@ -1,0 +1,15 @@
+{
+  "name": "agendi-web",
+  "version": "1.0.0",
+  "description": "Panel back-office de Agendi — gestión de citas y configuración",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev":     "vite",
+    "build":   "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
