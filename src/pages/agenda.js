@@ -1,4 +1,5 @@
 import { bookingsApi } from '../api/bookings.js';
+import { initRealtime } from '../services/realtimeService.js';
 
 const STATUS_LABEL = {
   Pending:   'Pendiente',
@@ -26,6 +27,15 @@ export async function renderAgenda(tenantId, container) {
     () => loadAppointments(tenantId, today));
 
   await loadAppointments(tenantId, today);
+
+  // Inicializar tiempo real — los eventos actualizan la vista sin recargar
+  const jwt = localStorage.getItem('agendi_token');
+  if (jwt) {
+    const today2 = today; // capturar para el closure
+    await initRealtime(jwt, (eventType, payload) => {
+      handleRealtimeEvent(eventType, payload, tenantId, today2);
+    });
+  }
 }
 
 async function loadAppointments(tenantId, date) {
@@ -110,4 +120,88 @@ function formatDate(date) {
   return date.toLocaleDateString('es-CO', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
+}
+
+// ── Tiempo real ────────────────────────────────────────────────────────────
+
+function handleRealtimeEvent(eventType, payload, tenantId, today) {
+  switch (eventType) {
+    case 'booking.created':
+      appendAppointmentCard(payload);
+      showToast(`📅 Nueva reserva: ${payload.clientName} — ${payload.startTimeLocal}`);
+      break;
+
+    case 'appointment.cancelled':
+      markAppointmentCancelled(payload.appointmentId);
+      showToast(`❌ Cancelación: ${payload.clientName}`, 'warning');
+      break;
+
+    case 'appointment.rescheduled':
+      markAppointmentCancelled(payload.oldAppointmentId);
+      appendAppointmentCard({
+        appointmentId  : payload.newAppointmentId,
+        clientName     : payload.clientName,
+        serviceName    : payload.serviceName,
+        startTimeLocal : payload.newStartTimeLocal,
+        status         : 'Confirmed',
+        channel        : 'WhatsApp',
+      });
+      showToast(`🔄 Reagendado: ${payload.clientName} → ${payload.newStartTimeLocal}`, 'info');
+      break;
+  }
+}
+
+function appendAppointmentCard(payload) {
+  const list = document.querySelector('.appointments-list');
+  const empty = document.querySelector('.empty-state');
+
+  // Si no hay lista aún, reemplazar empty-state con contenedor
+  if (!list) {
+    const container = document.getElementById('appointments-container');
+    if (!container) return;
+    container.innerHTML = `
+      <div class="stats-bar"><span id="stats-text">1 cita · 1 confirmada · 0 completadas</span></div>
+      <div class="appointments-list"></div>
+    `;
+  }
+
+  const apptList = document.querySelector('.appointments-list');
+  if (!apptList) return;
+
+  const div = document.createElement('div');
+  div.id        = `appt-${payload.appointmentId}`;
+  div.className = 'appt-card status-confirmed appt-new';
+  div.innerHTML = `
+    <div class="appt-time">${payload.startTimeLocal?.split(' ')[1] ?? ''}</div>
+    <div class="appt-info">
+      <strong class="appt-client">${payload.clientName}</strong>
+      <span class="appt-service">${payload.serviceName}</span>
+      <span class="appt-channel">via ${payload.channel ?? 'WhatsApp'}</span>
+    </div>
+    <div class="appt-actions">
+      <span class="status-badge badge-confirmed">Confirmada</span>
+    </div>
+  `;
+  apptList.prepend(div);
+
+  // Quitar animación después de 1s
+  setTimeout(() => div.classList.remove('appt-new'), 1000);
+}
+
+function markAppointmentCancelled(appointmentId) {
+  const card = document.getElementById(`appt-${appointmentId}`);
+  if (!card) return;
+  card.className = 'appt-card status-cancelled';
+  const badge = card.querySelector('.status-badge');
+  if (badge) { badge.className = 'status-badge badge-cancelled'; badge.textContent = 'Cancelada'; }
+  card.querySelectorAll('button').forEach(b => b.remove());
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add('toast-visible'), 10);
+  setTimeout(() => { toast.classList.remove('toast-visible'); setTimeout(() => toast.remove(), 300); }, 4000);
 }
