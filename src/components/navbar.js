@@ -13,9 +13,10 @@ export function renderNavbar(tenantSlug) {
       </div>
     </div>
     <ul class="nav-links">
-      <li><a href="#agenda"   class="nav-link" data-page="agenda">📅 Agenda</a></li>
-      <li><a href="#services" class="nav-link" data-page="services">✂️ Servicios</a></li>
-      <li><a href="#settings" class="nav-link" data-page="settings">⚙️ Configuración</a></li>
+      <li><a href="#dashboard" class="nav-link" data-page="dashboard">📊 Dashboard</a></li>
+      <li><a href="#agenda"    class="nav-link" data-page="agenda">📅 Agenda</a></li>
+      <li><a href="#services"  class="nav-link" data-page="services">✂️ Servicios</a></li>
+      <li><a href="#settings"  class="nav-link" data-page="settings">⚙️ Configuración</a></li>
     </ul>
     <button class="btn-logout" id="btn-logout">⏻ Salir</button>
   `;

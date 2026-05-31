@@ -1,11 +1,12 @@
 /**
  * Punto de entrada — enrutador SPA simple basado en location.hash.
  */
-import { renderNavbar }   from './components/navbar.js';
-import { renderLogin }    from './pages/login.js';
-import { renderAgenda }   from './pages/agenda.js';
-import { renderServices } from './pages/services.js';
-import { renderSettings } from './pages/settings.js';
+import { renderNavbar }    from './components/navbar.js';
+import { renderLogin }     from './pages/login.js';
+import { renderAgenda }    from './pages/agenda.js';
+import { renderServices }  from './pages/services.js';
+import { renderSettings }  from './pages/settings.js';
+import { renderDashboard } from './pages/dashboard.js';
 
 const mainContent = document.getElementById('main-content');
 
@@ -40,6 +41,9 @@ async function router() {
       break;
     case 'settings':
       await renderSettings(tenantId, mainContent);
+      break;
+    case 'dashboard':
+      await renderDashboard(tenantId, mainContent);
       break;
     default:
       mainContent.innerHTML = '<div class="error-msg">Página no encontrada.</div>';
